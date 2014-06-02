@@ -1,0 +1,99 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0">
+
+    <title>test</title>
+
+    <!-- icons -->
+    <link rel="apple-touch-icon" sizes="57x57" href="apple-touch-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="apple-touch-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="apple-touch-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="apple-touch-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="apple-touch-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="apple-touch-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="apple-touch-icon-152x152.png">
+    <link rel="icon" type="image/png" href="favicon-196x196.png" sizes="196x196">
+    <link rel="icon" type="image/png" href="favicon-160x160.png" sizes="160x160">
+    <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/png" href="favicon-16x16.png" sizes="16x16">
+    <link rel="icon" type="image/png" href="favicon-32x32.png" sizes="32x32">
+
+    <!-- Windows -->
+    <meta name="application-name" content="HIT">
+    <meta name="msapplication-TileColor" content="#ba1616">
+    <meta name="msapplication-TileImage" content="mstile-144x144.png">
+
+    <!-- phone -->
+    <meta name="format-detection" content="telephone=no">
+    <script>
+        meta = document.createElement('meta');
+        meta.name = 'apple-mobile-web-app-title';
+        meta.content = 'HIT';
+        document.getElementsByTagName('head')[0].appendChild(meta);
+    </script>
+
+    <!--[if lt IE 9]><script src="inc/html5shiv.js"></script><![endif]-->
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="inc/normalize.css">
+    <link rel="stylesheet" href="css/styles.css">
+
+    <script src="inc/prefixfree.dynamic-dom.min.js"></script>
+    <!-- MooTools, http://mootools.net -->
+    <script src="inc/mootools-core-1.4.5-full-nocompat.js"></script>
+    <script src="inc/mootools-more-1.4.0.1.js"></script>
+    <!-- Placeholders.js, http://jamesallardice.github.io/Placeholders.js/ -->
+
+    <!-- HIT -->
+    <script>
+        window.addEvent('domready', function() {
+            var ctx = $('canvas').getContext('2d')
+
+            var c = new Element('canvas', {
+                width: 50,
+                height: 5
+            })
+            var ctxBullet = c.getContext('2d')
+
+            ctxBullet.fillStyle = 'rgb(255, 255, 255)'
+            ctxBullet.fillRect(0, 0, 45, 5)
+            ctxBullet.fillStyle = 'rgb(255, 0, 0)'
+            ctxBullet.fillRect(45, 0, 5, 5)
+
+            var x = 210, y = 110
+            ctx.drawImage(c, 0, 0, 50, 5, x, y, 50, 5)
+
+            ctx.save()
+            ctx.translate(x, y)
+            ctx.rotate(Math.PI/2)
+            ctx.translate(-x, -y)
+            ctx.drawImage(c, 0, 0, 50, 5, x, y, 50, 5)
+            ctx.restore()
+
+            ctx.save()
+            ctx.translate(x, y)
+            ctx.rotate(Math.PI)
+            ctx.translate(-x, -y)
+            ctx.drawImage(c, 0, 0, 50, 5, x, y, 50, 5)
+            ctx.restore()
+
+            ctx.save()
+            ctx.translate(x, y)
+            ctx.rotate(3*Math.PI/2)
+            ctx.translate(-x, -y)
+            ctx.drawImage(c, 0, 0, 50, 5, x, y, 50, 5)
+            ctx.restore()
+
+        })
+
+    </script>
+</head>
+<body role="application">
+
+<canvas id="canvas" width="1000" height="500"></canvas>
+
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="initial-scale=1.0">
+
+	<title>HIT</title>
+
+	<!-- icons -->
+	<link rel="apple-touch-icon" sizes="57x57" href="apple-touch-icon-57x57.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="apple-touch-icon-114x114.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="144x144" href="apple-touch-icon-144x144.png">
+	<link rel="apple-touch-icon" sizes="60x60" href="apple-touch-icon-60x60.png">
+	<link rel="apple-touch-icon" sizes="120x120" href="apple-touch-icon-120x120.png">
+	<link rel="apple-touch-icon" sizes="76x76" href="apple-touch-icon-76x76.png">
+	<link rel="apple-touch-icon" sizes="152x152" href="apple-touch-icon-152x152.png">
+	<link rel="icon" type="image/png" href="favicon-196x196.png" sizes="196x196">
+	<link rel="icon" type="image/png" href="favicon-160x160.png" sizes="160x160">
+	<link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/png" href="favicon-16x16.png" sizes="16x16">
+	<link rel="icon" type="image/png" href="favicon-32x32.png" sizes="32x32">
+
+	<!-- Windows -->
+	<meta name="application-name" content="HIT">
+	<meta name="msapplication-TileColor" content="#ba1616">
+	<meta name="msapplication-TileImage" content="mstile-144x144.png">
+
+	<!-- phone -->
+	<meta name="format-detection" content="telephone=no">
+	<script>
+		meta = document.createElement('meta');
+		meta.name = 'apple-mobile-web-app-title';
+		meta.content = 'HIT';
+		document.getElementsByTagName('head')[0].appendChild(meta);
+	</script>
+
+	<!--[if lt IE 9]><script src="inc/html5shiv.js"></script><![endif]-->
+
+	<!-- CSS -->
+	<link rel="stylesheet" href="inc/normalize.css">
+	<link rel="stylesheet" href="css/styles.css">
+
+	<!-- -prefix-free, http://leaverou.github.io/prefixfree/ -->
+	<script src="inc/prefixfree.min.js"></script>
+	<script src="inc/prefixfree.dynamic-dom.min.js"></script>
+	<!-- MooTools, http://mootools.net -->
+	<script src="inc/mootools-core-1.4.5-full-nocompat.js"></script>
+	<script src="inc/mootools-more-1.4.0.1.js"></script>
+	<!-- Placeholders.js, http://jamesallardice.github.io/Placeholders.js/ -->
+	<script src="inc/placeholders.min.js"></script>
+	<!-- Selectivizr, http://selectivizr.com -->
+	<!--[if (gte IE 6)&(lte IE 8)]><script src="inc/selectivizr.min.js"></script><![endif]-->
+
+	<!-- HIT -->
+	<script>window.HIT = window.HIT || { 'data': {} };</script>
+	<script src="js/data/avatars.js"></script>
+	<script src="js/websocket.js"></script>
+	<script src="js/buffer.js"></script>
+	<script src="js/animation/animationManager.js"></script>
+	<script src="js/animation/animationStatic.js"></script>
+	<script src="js/animation/animationCanvas.js"></script>
+	<script src="js/animation/animationAnimated.js"></script>
+	<script src="js/entity/entity.js"></script>
+	<script src="js/entity/weapon.js"></script>
+	<script src="js/entity/character.js"></script>
+	<script src="js/client.js"></script>
+	<script src="js/game.js"></script>
+</head>
+<body role="application">
+
+	<!-- page de chargement !-->
+	<div id="box-loading">
+		<div class="box">
+			<h1>Chargement...</h1>
+			<div class="spinner"></div>
+			<h2>merci de patienter ;)</h2>
+		</div>
+	</div>
+
+	<!-- zone du jeux !-->
+	<div id="game-area">
+		<div id="map"></div>
+		<div id="game"></div>
+	</div>
+
+	<!-- page de connexion !-->
+	<div id="box-login">
+		<div class="box">
+			<h1>HIT</h1>
+			<p>Le jeu de shoot ou vous risquez d'y rester !</p>
+			<form autocomplete="off">
+				<div id="player-avatars">
+					<input id="player-avatar" type="hidden">
+					<span class="pick previous">&lsaquo;</span>
+					<span class="pick next">&rsaquo;</span>
+				</div>
+				<div><input id="player-name" type="text" placeholder="Veuillez choisir un pseudo"></div>
+				<button>JOUER</button>
+			</form>
+			<i class="ico-close"></i>
+		<div class="error"></div>
+		</div>
+	</div>
+</div>
+</html>
