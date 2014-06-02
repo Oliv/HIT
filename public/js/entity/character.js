@@ -35,13 +35,20 @@ var Character = new Class({
                 line: 2,
                 autorun: this.get('autorun') || false,
                 onLoad: function() {
+                    var map = HIT.game.map;
+
                     this.x = this.x - this.getCenter().x;
                     this.y = this.y - this.getCenter().y;
 
+                    this.buffer.screen = { x: null, y: null };
+
                     if (this.referer.isPlayer()) {
-                        $('map').setStyle('background-position', -this.x+'px '+-this.y+'px');
-                        $('container').setStyle('top', (this.y / HIT.game.map.areaHeight * 100) + '%');
-                        $('container').setStyle('left', (this.x / HIT.game.map.areaWidth * 100) + '%');
+                        if (this.x > (map.areaWidth / 2) && this.x < map.mapWidth - (map.areaWidth / 2)
+                                || this.y > (map.areaHeight / 2) && this.y < map.mapHeight - (map.areaHeight / 2)) {
+                            $('map').setStyle('background-position', (-this.x) + 'px ' + (-this.y) + 'px');
+                            $('container').setStyle('left', (100 - this.x / map.areaWidth * 100) + '%');
+                            $('container').setStyle('top', (100 - this.y / map.areaHeight * 100) + '%');
+                        }
                     }
 
 
@@ -92,7 +99,8 @@ var Character = new Class({
         a.buffer.px = 0;
 
         a.options.onBeforeDraw = function() {
-            var start = this.buffer.time.start,
+            var map = HIT.game.map,
+                start = this.buffer.time.start,
                 now = +new Date,
                 delta = now - start,
                 speed = this.referer.get('speed'),
@@ -118,11 +126,11 @@ var Character = new Class({
             if (this.y < 0) {
                 this.y = 0;
             }
-            if (this.x > HIT.game.map.mapWidth) {
-                this.x = HIT.game.map.mapWidth;
+            if (this.x > map.mapWidth) {
+                this.x = map.mapWidth;
             }
-            if (this.y > HIT.game.map.mapHeight) {
-                this.y = HIT.game.map.mapHeight;
+            if (this.y > map.mapHeight) {
+                this.y = map.mapHeight;
             }
 
 			// Taille de la hauteur du perso
@@ -130,20 +138,35 @@ var Character = new Class({
 			var p = 0; // % de la position du perso par rapport a l'écran
 			if ( this.y < 0)
 				p = 0;
-			else if ( this.y > HIT.game.map.areaHeight )
+			else if ( this.y > map.areaHeight )
 				p = 100;
 			else
-				p = this.y * 100 / HIT.game.map.areaHeight;
+				p = this.y * 100 / map.areaHeight;
 
 			// on divise pour que 50% = 1, 100% = 0.2, 0% = -0.2
 			p = (p-50)/2.5/100;
 
 			// repositionne le BG
-                    if (this.referer.isPlayer()) {
-            $('map').setStyle('background-position', (-this.x)+'px '+(-this.y)+'px');
-                $('container').setStyle('top', (100 - this.y / HIT.game.map.areaHeight * 100) + '%');
-                $('container').setStyle('left', (100 - this.x / HIT.game.map.areaWidth * 100) + '%');
-                    }
+            if (this.referer.isPlayer()) {
+                if (this.buffer.screen.x === null || this.buffer.screen.y === null) {
+                    this.buffer.screen.x = this.x;
+                    this.buffer.screen.y = this.y;
+                }
+
+                if ((this.buffer.moveType === 'left' || this.buffer.moveType === 'right') && this.x > (map.areaWidth / 2) && this.x < map.mapWidth - (map.areaWidth / 2)) {
+                    this.buffer.screen.x = this.x;
+
+                    $('map').setStyle('background-position', (-this.buffer.screen.x) + 'px ' + (-this.buffer.screen.y) + 'px');
+                    $('container').setStyle('left', (100 - this.buffer.screen.x / map.areaWidth * 100) + '%');
+                }
+
+                if ((this.buffer.moveType === 'up' || this.buffer.moveType === 'down') && this.y > (map.areaHeight / 2) && this.y < map.mapHeight - (map.areaHeight / 2)) {
+                    this.buffer.screen.y = this.y;
+
+                    $('map').setStyle('background-position', (-this.buffer.screen.x) + 'px ' + (-this.buffer.screen.y) + 'px');
+                    $('container').setStyle('top', (100 - this.buffer.screen.y / map.areaHeight * 100) + '%');
+                }
+            }
 
 			// calcul le nouveau ratio en fonction de l'angle de rotation du bg
 			//this.ratio = 1 + p * HIT.game.map.angle/HIT.game.map.angleMax;
