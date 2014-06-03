@@ -2,11 +2,14 @@ var Character = new Class({
     Extends: Entity,
 
     directory: null,
+    moveType: null,
 
     _currentWeapon: null,
-    moveType: null,
-    _isAlive: true,
+
     _isBusy: false,
+
+    _isAlive: true,
+    _lastKiller: null,
 
     initialize: function(id, data) {
         this.parent(id, data);
@@ -14,6 +17,13 @@ var Character = new Class({
         this.directory = 'chars';
 
         this._currentWeapon = new Weapon('gun', {}, this);
+        this._isBusy = false;
+        this._isAlive = true;
+        this._lastKiller = null;
+
+        this.addObserver('scores', new ObserverScores(this));
+
+        this.notify('EVENT_ENTITY_CONNECTED');
 
         return this;
     },
@@ -203,28 +213,40 @@ var Character = new Class({
         this._isBusy = true;
         this._currentWeapon.update(data);
         this._currentWeapon.show();
+
+        this.notify('EVENT_ENTITY_FIRE');
     },
 
     hit: function() {
         this._currentWeapon.remove();
         this._isBusy = false;
+
+        this.notify('EVENT_ENTITY_HIT');
     },
 
-    dead: function() {
-        HIT.websocket.send({ action: 'stop' });
+    dead: function(killer) {
         this.remove();
         this._isAlive = false;
+        this._isBusy = true;
+        this._lastKiller = killer;
+
+        this.notify('EVENT_ENTITY_DEAD');
     },
 
     revive: function() {
         this._isAlive = true;
         this._isBusy = false;
+        this._lastKiller = null;
 
         this.show();
+
+        this.notify('EVENT_ENTITY_ALIVE');
     },
 
     out: function() {
         this._currentWeapon.remove();
         this._isBusy = false;
+
+        this.notify('EVENT_ENTITY_MISS');
     }
 });

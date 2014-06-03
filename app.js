@@ -267,7 +267,7 @@ var Server = new prime({
             this.clients.forEach(function(client) {
                 if (weapon.getCenter().x > client.data.x - client.data.size.x/2 && weapon.getCenter().x < client.data.x + client.data.size.x/2
                         && weapon.getCenter().y > client.data.y - client.data.size.y/2 && weapon.getCenter().y < client.data.y + client.data.size.y/2) {
-                    client.dead();
+                    client.stop().dead();
                     weapon.client.stats.kills++;
                     res = true;
 
@@ -444,10 +444,14 @@ var Client = new prime({
 
     send: function() {
         this.server.broadcast({ action: 'update', id: this.id, data: this.data });
+
+        return this;
     },
 
     notify: function(message) {
         this.socket.sendUTF(JSON.stringify(message));
+
+        return this;
     },
 
     move: function(message) {
@@ -486,6 +490,8 @@ var Client = new prime({
         }, [this], (1000 / 60) + 'm');
 
         this.server.broadcast({ action: 'move', id: this.id, data: this.data });
+
+        return this;
     },
 
     stop: function(message) {
@@ -495,6 +501,8 @@ var Client = new prime({
 
             this.server.broadcast({ action: 'stop', id: this.id, data: this.data });
         }
+
+        return this;
     },
 
     fire: function() {
@@ -505,6 +513,8 @@ var Client = new prime({
         weapon.data.show = true;
 
         weapon.move();
+
+        return this;
     },
 
     dead: function() {
@@ -512,6 +522,8 @@ var Client = new prime({
         this._isAlive = false;
 
         this.stats.deaths++;
+
+        return this;
     }
 });
 

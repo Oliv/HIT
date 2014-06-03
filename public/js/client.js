@@ -110,11 +110,14 @@ var Client = new Class({
     },
 
     hit: function(request) {
-        if (this.entities[request.id]) {
-            this.entities[request.id].hit(request.data);
+        var id = request.id,
+            target = request.data.target;
 
-            if (request.data.target && this.entities[request.data.target]) {
-                this.entities[request.data.target].dead();
+        if (this.entities[id]) {
+            this.entities[id].hit(request.data);
+
+            if (target && this.entities[target]) {
+                this.entities[target].dead(this.entities[id]);
             }
         }
     },
