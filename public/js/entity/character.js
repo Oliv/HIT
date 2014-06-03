@@ -46,8 +46,8 @@ var Character = new Class({
                         if (this.x > (map.areaWidth / 2) && this.x < map.mapWidth - (map.areaWidth / 2)
                                 || this.y > (map.areaHeight / 2) && this.y < map.mapHeight - (map.areaHeight / 2)) {
                             $('map').setStyle('background-position', (-this.x) + 'px ' + (-this.y) + 'px');
-                            $('container').setStyle('left', (100 - this.x / map.areaWidth * 100) + '%');
-                            $('container').setStyle('top', (100 - this.y / map.areaHeight * 100) + '%');
+                            $('container').setStyle('left', (100 - this.x / map.mapWidth * 100) + '%');
+                            $('container').setStyle('top', (100 - this.y / map.mapHeight * 100) + '%');
                         }
                     }
 
@@ -157,14 +157,14 @@ var Character = new Class({
                     this.buffer.screen.x = this.x;
 
                     $('map').setStyle('background-position', (-this.buffer.screen.x) + 'px ' + (-this.buffer.screen.y) + 'px');
-                    $('container').setStyle('left', (100 - this.buffer.screen.x / map.areaWidth * 100) + '%');
+                    $('container').setStyle('left', (100 - this.buffer.screen.x / map.mapWidth * 100) + '%');
                 }
 
                 if ((this.buffer.moveType === 'up' || this.buffer.moveType === 'down') && this.y > (map.areaHeight / 2) && this.y < map.mapHeight - (map.areaHeight / 2)) {
                     this.buffer.screen.y = this.y;
 
                     $('map').setStyle('background-position', (-this.buffer.screen.x) + 'px ' + (-this.buffer.screen.y) + 'px');
-                    $('container').setStyle('top', (100 - this.buffer.screen.y / map.areaHeight * 100) + '%');
+                    $('container').setStyle('top', (100 - this.buffer.screen.y / map.mapHeight * 100) + '%');
                 }
             }
 
