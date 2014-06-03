@@ -120,17 +120,17 @@ var Character = new Class({
                 this.y += deltaPx;
             }
 
-            if (this.x < 0) {
-                this.x = 0;
+            if (this.x < this.getFrameSize().x + 66) {
+                this.x = this.getFrameSize().x + 66;
             }
-            if (this.y < 0) {
-                this.y = 0;
+            if (this.y < this.getFrameSize().y) {
+                this.y = this.getFrameSize().y;
             }
-            if (this.x > map.mapWidth) {
-                this.x = map.mapWidth;
+            if (this.x > map.mapWidth - this.getFrameSize().x) {
+                this.x = map.mapWidth - this.getFrameSize().x;
             }
-            if (this.y > map.mapHeight) {
-                this.y = map.mapHeight;
+            if (this.y > map.mapHeight - this.getFrameSize().y) {
+                this.y = map.mapHeight - this.getFrameSize().y;
             }
 
 			// Taille de la hauteur du perso

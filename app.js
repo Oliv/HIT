@@ -235,6 +235,18 @@ var Server = new prime({
         return this;
     },
 
+    sendStats: function() {
+        var stats = [];
+
+        this.clients.forEach(function(client) {
+            stats[client.id] = client.stats;
+        }.bind(this));
+
+        this.broadcast({ action: 'stats', data: stats });
+
+        return this;
+    },
+
     getHit: function(weapon) {
         var res = false,
             timer = require('nanotimer'),
@@ -245,12 +257,15 @@ var Server = new prime({
                 if (weapon.getCenter().x > client.data.x - client.data.size.x/2 && weapon.getCenter().x < client.data.x + client.data.size.x/2
                         && weapon.getCenter().y > client.data.y - client.data.size.y/2 && weapon.getCenter().y < client.data.y + client.data.size.y/2) {
                     client.dead();
+                    weapon.client.stats.kills++;
                     res = true;
 
                     this.broadcast({ action: 'hit', id: weapon.client.id, data: {
                         target: client.id,
                         message: client.id + ' tué par ' + weapon.client.id
                     } });
+
+                    this.sendStats();
 
                     t.setTimeout(function(server, client) {
                         server.broadcast({ action: 'revive', id: client.id, data: {} });
@@ -381,6 +396,11 @@ var Client = new prime({
     server: {},
     socket: null,
 
+    stats: {
+        kills: 0,
+        deaths: 0,
+    },
+
     _currentWeapon: null,
     _isAlive: true,
 
@@ -401,8 +421,12 @@ var Client = new prime({
             y: 48
         };
         this.data.moveType = this.MOVE_RIGHT;
-
         this.data.show = true;
+
+        this.stats = {
+            kills: 0,
+            deaths: 0
+        };
 
         this._currentWeapon = new Weapon(this);
     },
@@ -435,17 +459,17 @@ var Client = new prime({
                 entity.data.y += speed;
             }
 
-            if (entity.data.x < 0) {
-                entity.data.x = 0;
+            if (entity.data.x < entity.data.size.x + 82) {
+                entity.data.x = entity.data.size.x + 82;
             }
-            if (entity.data.y < 0) {
-                entity.data.y = 0;
+            if (entity.data.y < entity.data.size.y + 24) {
+                entity.data.y = entity.data.size.y + 24;
             }
-            if (entity.data.x > entity.server.mapSize.x) {
-                entity.data.x = entity.server.mapSize.x;
+            if (entity.data.x > entity.server.mapSize.x - entity.data.size.x/2) {
+                entity.data.x = entity.server.mapSize.x - entity.data.size.x/2;
             }
-            if (entity.data.y > entity.server.mapSize.y) {
-                entity.data.y = entity.server.mapSize.y;
+            if (entity.data.y > entity.server.mapSize.y - entity.data.size.y/2) {
+                entity.data.y = entity.server.mapSize.y - entity.data.size.y/2;
             }
 
         }, [this], (1000 / 60) + 'm');
@@ -475,6 +499,8 @@ var Client = new prime({
     dead: function() {
         this.show = false;
         this._isAlive = false;
+
+        this.stats.deaths++;
     }
 });
 

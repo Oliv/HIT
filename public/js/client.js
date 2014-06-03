@@ -169,7 +169,7 @@ var Client = new Class({
                             HIT.websocket.send({ action: 'move', data: e.key });
                             this._keyPress = e.key;
                         }
-                    } else if (e.key === 'a') {
+                    } else if (e.key === 'space') {
                         e.preventDefault();
 
                         if (!this.entities[this.idPlayer]._isBusy) {
