@@ -35,11 +35,6 @@ var Websocket = new prime({
     httpServer: null,
 
     constructor: function(http) {
-        this.servers.push(new Server(this.servers.length, 'Serveur 1', 4));
-        this.servers.push(new Server(this.servers.length, 'Serveur 2', 6));
-        this.servers.push(new Server(this.servers.length, 'Serveur 3', 8));
-        this.servers.push(new Server(this.servers.length, 'Serveur 4', 2));
-
         this.httpServer = new websocket.server({
             httpServer: http
         }).on('request', function(request) {
@@ -68,22 +63,26 @@ var Websocket = new prime({
                         socket.id = +id + 1;
                         delete message.data.websocket;
 
-                        if (this.servers[message.data.server] !== undefined) {
-                            var client = new Client(this.servers[message.data.server], socket, message.data);
+                        var idServer = message.data.server;
+                        if (this.servers[idServer] === undefined) {
+                            var nbPlayers = 4;
 
-                            this.addClient(client);
-                            this.servers[client.data.server].addClient(client);
-                            client.send();
+                            this.servers[idServer] = new Server(idServer, 'Serveur ' + id, nbPlayers);
 
-                            console.info(client.id, 'connecté au serveur', client.data.server);
-                        } else {
-
+                            console.info('Creating server with id', idServer);
                         }
-                    } else if (this.clients[socket.id]) {
+
+                        var server = this.servers[message.data.server],
+                            client = new Client(server, socket, message.data);
+
+                        this.addClient(client);
+                        server.addClient(client);
+                        client.send();
+
+                        console.info(client.id, 'connecté au serveur', client.data.server);
+                    } else if (this.clients[socket.id] && this.clients[socket.id][message.action]) {
                         // traite message
-                        // try {
-                            this.clients[socket.id][message.action].call(this.clients[socket.id], message.data);
-                        // } catch(e) { console.error(message, 'non traité'); }
+                        this.clients[socket.id][message.action].call(this.clients[socket.id], message.data);
                     } else {
                         console.error(message, 'non traité');
                     }
@@ -94,11 +93,23 @@ var Websocket = new prime({
                 var client = this.clients[socket.id];
 
                 if (client) {
-                    //Deco
+                    // Deco
                     client.server.removeClient(client);
                     this.removeClient(client);
 
                     console.info(client.id, 'déconnecté du serveur', client.data.server);
+
+                    // Empty server ?
+                    if (client.server.currentPlayers === 0) {
+                        // Remove server
+                        var id = client.data.server;
+
+                        if (this.servers[id] !== undefined) {
+                            this.servers.splice(id, 1);
+
+                            console.info('Removing empty server with id', id);
+                        }
+                    }
                 }
             }.bind(this));
         }.bind(this));
