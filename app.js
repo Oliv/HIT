@@ -24,10 +24,8 @@ var app = connect()
         });
     });
 
-var httpServer = http.createServer(app).listen(8080);
-console.info('Server running on port 8080');
-
-
+var httpServer = http.createServer(app).listen(443);
+console.info('Server running on port 443');
 
 var Websocket = new prime({
     clients: [],
@@ -82,6 +80,8 @@ var Websocket = new prime({
                         console.info(client.id, 'connecté au serveur', client.data.server);
                     } else if (this.clients[socket.id] && this.clients[socket.id][message.action]) {
                         // traite message
+                        console.info(message.action, 'appelé par le client', socket.id);
+
                         this.clients[socket.id][message.action].call(this.clients[socket.id], message.data);
                     } else {
                         console.error(message, 'non traité');
@@ -114,7 +114,7 @@ var Websocket = new prime({
             }.bind(this));
         }.bind(this));
 
-        console.info('Websocket server running on port 8080');
+        console.info('Websocket server running on port 443');
     },
 
     notify: function(id, message) {
@@ -221,6 +221,8 @@ var Server = new prime({
                     client.notify({ action: 'connected', id: c.id, data: c.data });
                 }
             });
+
+            this.sendStats();
         } else {
             client.notify({ action: 'authenticated', id: client.id, data: {
                 server: null,
@@ -265,7 +267,7 @@ var Server = new prime({
 
         if (weapon.data.x, weapon.data.y, weapon.data.show) {
             this.clients.forEach(function(client) {
-                if (weapon.getCenter().x > client.data.x - client.data.size.x/2 && weapon.getCenter().x < client.data.x + client.data.size.x/2
+                if (client.isAlive() && weapon.getCenter().x > client.data.x - client.data.size.x/2 && weapon.getCenter().x < client.data.x + client.data.size.x/2
                         && weapon.getCenter().y > client.data.y - client.data.size.y/2 && weapon.getCenter().y < client.data.y + client.data.size.y/2) {
                     client.stop().dead();
                     weapon.client.stats.kills++;
@@ -273,12 +275,15 @@ var Server = new prime({
 
                     this.broadcast({ action: 'hit', id: weapon.client.id, data: {
                         target: client.id,
+                        type: weapon.data.type,
                         message: client.id + ' tué par ' + weapon.client.id
                     } });
 
                     this.sendStats();
 
                     t.setTimeout(function(server, client) {
+                        client.alive();
+
                         server.broadcast({ action: 'revive', id: client.id, data: {} });
                     }, [this, client], this.timeDead + 's');
 
@@ -291,13 +296,17 @@ var Server = new prime({
     },
 
     getOut: function(weapon) {
-        var out = weapon.data.x < 0 || weapon.data.y < 0 || weapon.data.x > this.mapSize.x || weapon.data.y > this.mapSize.y;
+        var out = false;
 
-        if (out) {
-            this.broadcast({ action: 'out', id: weapon.client.id, data: {
-                target: null,
-                message: weapon.client.id + 'a perdu une balle'
-            } });
+        if (weapon.data.x, weapon.data.y, weapon.data.show) {
+            if (weapon.data.x < 0 || weapon.data.y < 0 || weapon.data.x > this.mapSize.x || weapon.data.y > this.mapSize.y) {
+                out = true;
+
+                this.broadcast({ action: 'out', id: weapon.client.id, data: {
+                    target: null,
+                    message: weapon.client.id + 'a perdu une munition'
+                } });
+            }
         }
 
         return out;
@@ -339,26 +348,51 @@ var Weapon = new prime({
     client: null,
 
     constructor: function(client) {
-        Client.parent.constructor.call(this);
+        Weapon.parent.constructor.call(this);
 
         this.client = client;
         this._moveInterval = null;
 
         this.data.type = 'weapon';
-        this.data.speed = 10;
         this.data.x = this.client.data.x;
         this.data.y = this.client.data.y;
+    },
+
+    stop: function() {
+        if (this._moveInterval) {
+            this._moveInterval.clearInterval();
+            this._moveInterval = null;
+
+            this.data.show = false;
+        }
+    }
+});
+
+
+
+var Gun = new prime({
+    inherits: Weapon,
+
+    constructor: function(client) {
+        Gun.parent.constructor.call(this, client);
+
+        this.data.type = 'gun';
+        this.data.speed = 10;
+        this.data.ammo = -1;
         this.data.size = {
             x: 17,
             y: 6
         };
     },
 
-    move: function() {
+    activate: function() {
         var client = this.client,
             server = client.server,
+            timer = require('nanotimer'),
             moveType = client.data.moveType,
             speed = this.data.speed;
+
+        this.data.show = true;
 
         if (moveType === this.MOVE_LEFT) {
             this.data.x = client.data.x - client.data.size.x / 2 - this.data.size.x / 2;
@@ -370,32 +404,77 @@ var Weapon = new prime({
             this.data.y = client.data.y + client.data.size.y / 2 + this.data.size.y / 2;
         }
 
-        this._moveInterval = setInterval(function() {
-            if (moveType === this.MOVE_LEFT) {
-                this.data.x -= speed;
-            } else if (moveType === this.MOVE_RIGHT) {
-                this.data.x += speed;
-            } else if (moveType === this.MOVE_UP) {
-                this.data.y -= speed;
-            } else if (moveType === this.MOVE_DOWN) {
-                this.data.y += speed;
+        this._moveInterval = new timer();
+        this._moveInterval.setInterval(function(weapon, server) {
+            if (moveType === weapon.MOVE_LEFT) {
+                weapon.data.x -= speed;
+            } else if (moveType === weapon.MOVE_RIGHT) {
+                weapon.data.x += speed;
+            } else if (moveType === weapon.MOVE_UP) {
+                weapon.data.y -= speed;
+            } else if (moveType === weapon.MOVE_DOWN) {
+                weapon.data.y += speed;
             }
 
-            if (server.getHit(this) || server.getOut(this)) {
-                this.stop();
+            if (server.getHit(weapon) || server.getOut(weapon)) {
+                weapon.stop();
             }
-        }.bind(this), 1000 / 60);
+        }, [this, server], (1000 / 60) + 'm');
 
         this.data.moveType = moveType;
         server.broadcast({ action: 'fire', id: client.id, data: this.data });
+    }
+});
+
+
+var Landmine = new prime({
+    inherits: Weapon,
+
+    constructor: function(client) {
+        Landmine.parent.constructor.call(this, client);
+
+        this.data.type = 'landmine';
+        this.data.speed = 0;
+        this.data.ammo = 5;
+        this.data.activationTime = 1000;
+        this.data.size = {
+            x: 40,
+            y: 40
+        };
+    },
+
+    activate: function() {
+        var client = this.client,
+            server = client.server,
+            timer = require('nanotimer'),
+            t = new timer();
+
+        this.data.x = client.getCenter().x;
+        this.data.y = client.getCenter().y;
+
+        this.data.show = true;
+
+        server.broadcast({ action: 'fire', id: client.id, data: this.data });
+
+        t.setTimeout(function(weapon, server) {
+            weapon._moveInterval = new timer();
+            weapon._moveInterval.setInterval(function(weapon, server) {
+                if (server.getHit(weapon)) {
+                    weapon.stop();
+                }
+            }, [weapon, server], (1000 / 60) + 'm');
+        }, [this, server], this.data.activationTime + 'm');
     },
 
     stop: function() {
         if (this._moveInterval) {
-            clearInterval(this._moveInterval);
+            this.data.x = null;
+            this.data.y = null;
+
+            this._moveInterval.clearInterval();
             this._moveInterval = null;
         }
-    },
+    }
 });
 
 
@@ -412,6 +491,7 @@ var Client = new prime({
         deaths: 0,
     },
 
+    _weapons: [],
     _currentWeapon: null,
     _isAlive: true,
 
@@ -439,7 +519,9 @@ var Client = new prime({
             deaths: 0
         };
 
-        this._currentWeapon = new Weapon(this);
+        this._weapons['gun'] = new Gun(this);
+        this._weapons['landmine'] = new Landmine(this);
+        this._currentWeapon = this._weapons['gun'];
     },
 
     send: function() {
@@ -499,6 +581,8 @@ var Client = new prime({
             this._moveInterval.clearInterval();
             this._moveInterval = null;
 
+            this.data.show = false;
+
             this.server.broadcast({ action: 'stop', id: this.id, data: this.data });
         }
 
@@ -512,16 +596,35 @@ var Client = new prime({
         weapon.data.y = this.data.y;
         weapon.data.show = true;
 
-        weapon.move();
+        weapon.activate();
 
         return this;
     },
 
     dead: function() {
-        this.show = false;
+        this.data.show = false;
         this._isAlive = false;
 
         this.stats.deaths++;
+
+        return this;
+    },
+
+    alive: function() {
+        this.data.show = true;
+        this._isAlive = true;
+
+        return this;
+    },
+
+    isAlive: function() {
+        return this._isAlive;
+    },
+
+    changeWeapon: function(idWeapon) {
+        this._currentWeapon = this._weapons[idWeapon];
+
+        this.server.broadcast({ action: 'changeWeapon', id: this.id, data: idWeapon });
 
         return this;
     }

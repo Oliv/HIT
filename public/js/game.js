@@ -32,7 +32,7 @@ var Game = new Class({
 			avatar: false,
 			server: window.location.hash != '' ? window.location.hash.substr(1, window.location.hash.length) : 1,
 			hostname: window.location.hostname,
-			port: window.location.port != '' ? window.location.port : 8080
+			port: window.location.port != '' ? window.location.port : 443
 		}
 
 		// charge le cookie des configs
@@ -69,6 +69,15 @@ var Game = new Class({
 			if ( e.wheel > 0 )
 				this.map.angle -= this.options.stepDeg;
 			else if ( e.wheel < 0 )
+				this.map.angle += this.options.stepDeg;
+
+			this.mapRotate();
+		}.bind(this));
+
+		window.addEvent('keydown', function(e) {
+			if ( e.key === 's' )
+				this.map.angle -= this.options.stepDeg;
+			else if ( e.key === 'z' )
 				this.map.angle += this.options.stepDeg;
 
 			this.mapRotate();
@@ -165,7 +174,7 @@ var Game = new Class({
 		this.map.areaWidth = s.x;
 		this.map.areaHeight = s.y;
 
-		// la taille de la map est plus petite que l'écran, on redimensionne 
+		// la taille de la map est plus petite que l'écran, on redimensionne
 		if ( this.map.mapWidth < this.map.areaWidth*this.options.areaZoom )
 			this.map.areaWidth = this.map.mapWidth/this.options.areaZoom;
 		if ( this.map.mapHeight < this.map.areaHeight*this.options.areaZoom )

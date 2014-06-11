@@ -32,16 +32,6 @@ var Client = new Class({
             this.path += pathArray[i] + '/';
         }
 
-        // Rendering
-		/*
-		// OLD
-        var canvas = new Element('canvas', {
-            width: document.id('game').getSize().x,
-            height: document.id('game').getSize().y,
-            id: 'container'
-        }).inject(document.id('game'));
-        */
-
         var canvas = new Element('canvas', {
             width: HIT.game.map.mapWidth,
             height: HIT.game.map.mapHeight,
@@ -109,6 +99,12 @@ var Client = new Class({
         }
     },
 
+    changeWeapon: function(request) {
+        if (this.entities[request.id]) {
+            this.entities[request.id].changeWeapon(request.data);
+        }
+    },
+
     hit: function(request) {
         var id = request.id,
             target = request.data.target;
@@ -156,10 +152,11 @@ var Client = new Class({
             default: break;
         }
 
-        if (this.entities[request.id].isPlayer()) {
+        var character = this.entities[request.id];
+        if (character.isPlayer()) {
             // events
             window.addEvent('keydown', function(e) {
-                if (this.entities[this.idPlayer]._isAlive) {
+                if (character._isAlive) {
                     if (e.key === 'left' || e.key === 'right' || e.key === 'up' || e.key === 'down') {
                         e.preventDefault();
 
@@ -172,19 +169,43 @@ var Client = new Class({
                             HIT.websocket.send({ action: 'move', data: e.key });
                             this._keyPress = e.key;
                         }
-                    } else if (e.key === 'space') {
-                        e.preventDefault();
-
-                        if (!this.entities[this.idPlayer]._isBusy) {
-                            HIT.websocket.send({ action: 'fire' });
-                        }
                     }
                 }
             }.bind(this)).addEvent('keyup', function(e) {
-                if (this.entities[this.idPlayer]._isAlive) {
+                if (character._isAlive) {
                     if (this._keyPress && this._keyPress === e.key) {
+                        e.preventDefault();
+
                         HIT.websocket.send({ action: 'stop' });
                         this._keyPress = false;
+                    }
+
+                    if (e.key === 'space') {
+                        e.preventDefault();
+
+                        if (!character._isBusy) {
+                            HIT.websocket.send({ action: 'fire' });
+                        }
+                    } else {
+                        var weapons = character._weapons,
+                            weapon = null;
+
+                        for (var i in weapons) {
+                            if (weapons.hasOwnProperty(i)) {
+                                var w = weapons[i];
+
+                                if (w._key.contains(e.key)) {
+                                    weapon = weapons[i];
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (weapon) {
+                            e.preventDefault();
+
+                            HIT.websocket.send({ action: 'changeWeapon', data: weapon.id });
+                        }
                     }
                 }
             }.bind(this));

@@ -4,9 +4,8 @@ var Character = new Class({
     directory: null,
     moveType: null,
 
+    _weapons: [],
     _currentWeapon: null,
-
-    _isBusy: false,
 
     _isAlive: true,
     _lastKiller: null,
@@ -16,8 +15,10 @@ var Character = new Class({
 
         this.directory = 'chars';
 
-        this._currentWeapon = new Weapon('gun', {}, this);
-        this._isBusy = false;
+        this._weapons['gun'] = new Gun('gun', {}, this);
+        this._weapons['landmine'] = new Landmine('landmine', {}, this);
+        this._currentWeapon = this._weapons['gun'];
+
         this._isAlive = true;
         this._lastKiller = null;
 
@@ -209,17 +210,29 @@ var Character = new Class({
         a.y = this.get('y') - a.getCenter().y;
     },
 
+    changeWeapon: function(idWeapon) {
+        this._currentWeapon = this._weapons[idWeapon];
+
+        this.notify('EVENT_ENTITY_SWITCH_WEAPON');
+    },
+
+    getWeapon: function(idWeapon) {
+        return this._weapons[idWeapon];
+    },
+
     fire: function(data) {
-        this._isBusy = true;
+        this._currentWeapon._isBusy = true;
         this._currentWeapon.update(data);
         this._currentWeapon.show();
 
         this.notify('EVENT_ENTITY_FIRE');
     },
 
-    hit: function() {
-        this._currentWeapon.remove();
-        this._isBusy = false;
+    hit: function(data) {
+        var weapon = this.getWeapon(data.type);
+        if (weapon)
+            weapon.remove();
+        this._currentWeapon._isBusy = false;
 
         this.notify('EVENT_ENTITY_HIT');
     },
@@ -227,7 +240,7 @@ var Character = new Class({
     dead: function(killer) {
         this.remove();
         this._isAlive = false;
-        this._isBusy = true;
+        this._currentWeapon._isBusy = true;
         this._lastKiller = killer;
 
         this.notify('EVENT_ENTITY_DEAD');
@@ -235,7 +248,7 @@ var Character = new Class({
 
     revive: function() {
         this._isAlive = true;
-        this._isBusy = false;
+        this._currentWeapon._isBusy = false;
         this._lastKiller = null;
 
         this.show();
@@ -245,7 +258,7 @@ var Character = new Class({
 
     out: function() {
         this._currentWeapon.remove();
-        this._isBusy = false;
+        this._currentWeapon._isBusy = false;
 
         this.notify('EVENT_ENTITY_MISS');
     }

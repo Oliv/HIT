@@ -69,6 +69,7 @@ var MooWebSocket = new Class({
     },
 
     send: function(data) {
+        console.info('Sent to server', data);
         if (this.cnx && this.cnx.readyState === this.cnx.OPEN)
             this.cnx.send((this.options.json && JSON && this.cnx.binaryType === 'blob') ? JSON.encode(data) : data);
 
