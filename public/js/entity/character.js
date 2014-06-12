@@ -15,6 +15,9 @@ var Character = new Class({
 
         this.directory = 'chars';
 
+        this.moveType = null;
+
+        this._weapons = [];
         this._weapons['gun'] = new Gun('gun', {}, this);
         this._weapons['landmine'] = new Landmine('landmine', {}, this);
         this._currentWeapon = this._weapons['gun'];

@@ -18,7 +18,7 @@ var Weapon = new Class({
      *
      **/
     show: function() {
-        console.error('Redefine this');
+        console.error('Inhéritance of Weapon::show needed');
 
         return this;
     },

@@ -77,10 +77,10 @@ var Websocket = new prime({
                         server.addClient(client);
                         client.send();
 
-                        console.info(client.id, 'connecté au serveur', client.data.server);
+                        console.info(client.id, 'connected to server', client.data.server);
                     } else if (this.clients[socket.id] && this.clients[socket.id][message.action]) {
                         // traite message
-                        console.info(message.action, 'appelé par le client', socket.id);
+                        console.info(message.action, 'called by client', socket.id);
 
                         this.clients[socket.id][message.action].call(this.clients[socket.id], message.data);
                     } else {
@@ -97,7 +97,7 @@ var Websocket = new prime({
                     client.server.removeClient(client);
                     this.removeClient(client);
 
-                    console.info(client.id, 'déconnecté du serveur', client.data.server);
+                    console.info(client.id, 'disconnected from server', client.data.server);
 
                     // Empty server ?
                     if (client.server.currentPlayers === 0) {
@@ -519,6 +519,9 @@ var Client = new prime({
             deaths: 0
         };
 
+        this._isAlive = true;
+
+        this._weapons = [];
         this._weapons['gun'] = new Gun(this);
         this._weapons['landmine'] = new Landmine(this);
         this._currentWeapon = this._weapons['gun'];
