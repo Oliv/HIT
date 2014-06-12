@@ -267,8 +267,7 @@ var Server = new prime({
 
         if (weapon.data.x, weapon.data.y, weapon.data.show) {
             this.clients.forEach(function(client) {
-                if (client.isAlive() && weapon.getCenter().x > client.data.x - client.data.size.x/2 && weapon.getCenter().x < client.data.x + client.data.size.x/2
-                        && weapon.getCenter().y > client.data.y - client.data.size.y/2 && weapon.getCenter().y < client.data.y + client.data.size.y/2) {
+                if (client.isAlive() && weapon.intersect(client)) {
                     client.stop().dead();
                     weapon.client.stats.kills++;
                     res = true;
@@ -340,6 +339,26 @@ var Entity = new prime({
             x: this.data.x + this.data.size.x/2,
             y: this.data.y + this.data.size.y/2
         }
+    },
+
+    intersect: function(entity) {
+        var a = {
+                left: this.data.x,
+                right: this.data.x + this.data.size.x,
+                top: this.data.y,
+                bottom: this.data.y + this.data.size.y
+            },
+            b = {
+                left: entity.data.x,
+                right: entity.data.x + entity.data.size.x,
+                top: entity.data.y,
+                bottom: entity.data.y + entity.data.size.y
+            };
+
+        return a.left <= b.right &&
+            b.left <= a.right &&
+            a.top <= b.bottom &&
+            b.top <= a.bottom;
     }
 });
 
