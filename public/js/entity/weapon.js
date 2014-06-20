@@ -1,37 +1,41 @@
-var Weapon = new Class({
-	Extends: Entity,
-    owner: null,
-    _key: [],
-    _isBusy: false,
+define(function(require) {
+    var Entity = require('entity/entity');
 
-	initialize: function(id, data, owner) {
-        this.directory = 'weapons';
-        this.owner = owner;
-        this._key = [];
-        this._isBusy = false;
+    return new Class({
+    	Extends: Entity,
+        owner: null,
+        _key: [],
+        _isBusy: false,
 
-		this.parent(id, data);
-    },
+    	initialize: function(id, data, owner) {
+            this.directory = 'weapons';
+            this.owner = owner;
+            this._key = [];
+            this._isBusy = false;
 
-    /**
-     * Show weapon
-     *
-     **/
-    show: function() {
-        console.error('Inhéritance of Weapon::show needed');
+    		this.parent(id, data);
+        },
 
-        return this;
-    },
+        /**
+         * Show weapon
+         *
+         **/
+        show: function() {
+            console.error('Inhéritance of Weapon::show needed');
 
-    /**
-     * Remove weapon and all animations
-     *
-     **/
-    remove: function() {
-        HIT.animation.remove(this);
+            return this;
+        },
 
-        for (var i in this.animations) {
-            delete this.animations[i];
+        /**
+         * Remove weapon and all animations
+         *
+         **/
+        remove: function() {
+            HIT.animation.remove(this);
+
+            for (var i in this.animations) {
+                delete this.animations[i];
+            }
         }
-    }
+    });
 });
